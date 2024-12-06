@@ -70,8 +70,8 @@ int main(int argc, char *argv[])
     std::cout << "distanza a " << 10.3 << "° di second_lidar: " << second_lidar.get_distance(10.3) << " m" << std::endl;
     
     // ------------------------ BLOCCO TEST 2 ------------------------
-    
-    /* // pulizia del buffer
+    /*
+    // pulizia del buffer
     default_lidar.clear_buffer();
     std::cout << "buffer pulito" << std::endl;
 
@@ -85,11 +85,11 @@ int main(int argc, char *argv[])
 
     // prova di eliminazione dello scan inserito post buffer clear
     std::vector<double> oldest_post_clear_scan = default_lidar.get_scan();
-    std::cout << "prova di eliminazione della scansione inserita post buffer-clear: \n" << oldest_post_clear_scan << std::endl; */
-
+    std::cout << "prova di eliminazione della scansione inserita post buffer-clear: \n" << oldest_post_clear_scan << std::endl;
+    */
     // ------------------------ BLOCCO TEST 3 ------------------------
-    
-    /* // caso in cui scan contiene meno valori del dovuto
+    /*
+    // caso in cui scan contiene meno valori del dovuto
     std::vector<double> incomplete_scan = print_scan(0.0, 2.0, 134);
     std::cout << "vector sotto-dimensionato: \n" << incomplete_scan << std::endl;
     LidarDriver blocco3_lidar;
@@ -101,11 +101,11 @@ int main(int argc, char *argv[])
     std::cout << "vector sovra-dimensionato: \n" << too_much_value << std::endl;
     LidarDriver blocco4_lidar;
     blocco4_lidar.new_scan(too_much_value);
-    std::cout << "caso con scansione sovra-dimensionata: \n" << blocco4_lidar << std::endl; */
-
+    std::cout << "caso con scansione sovra-dimensionata: \n" << blocco4_lidar << std::endl;
+    */
     // ------------------------ BLOCCO TEST 4 ------------------------
-    
-    /* // caso in cui scan contiene anche valori negativi
+    /*
+    // caso in cui scan contiene anche valori negativi
     default_lidar.clear_buffer();
     int count_negative_value = 0;
     std::vector<double> negative_value = print_scan(-0.5, 2.0, (180.0 / default_lidar.angular_resolution()) + 1);
@@ -115,8 +115,8 @@ int main(int argc, char *argv[])
 
     std::cout << "vector con " << count_negative_value << " valori negativi: \n" << negative_value << std::endl;
     default_lidar.new_scan(negative_value);
-    std::cout << "caso con scansione con valori negativi: \n" << default_lidar << std::endl; */
-
+    std::cout << "caso con scansione con valori negativi: \n" << default_lidar << std::endl;
+    */
     // ------------------------ FINE TEST ------------------------
     
     return 0;
