@@ -17,9 +17,9 @@ void Maze::insert_maze (std::fstream &fs)
         {
             temp_char = (char)fs.get();
             if (temp_char == "E")
-                exits_position.push_back(i*9+k);
+                exits_position.push_back(i * 9 + k);
             if (temp_char == "S")
-                starting_position = i*9+k;
+                starting_position = i * 9 + k;
             GRID[i][k] = temp_char;
         }
     }
