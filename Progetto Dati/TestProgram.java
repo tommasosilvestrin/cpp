@@ -34,7 +34,7 @@ class MyEntry
 //Class SkipListPQ
 class SkipListPQ
 {
-    private double alpha;                                                   // head probability of a coin toss
+    private double alpha;
     private Random rand;
     private List<List<MyEntry>> skip_list;
     private int size;
@@ -68,26 +68,44 @@ class SkipListPQ
         MyEntry new_entry = new MyEntry(key, value);
         int traversed_nodes = 0;
 
+        level_exists(0);
         List<MyEntry> bottom_list = skip_list.get(0);
         int p = SkipSearch(bottom_list, key);
-        bottom_list.add(p, new_entry);
-        traversed_nodes = traversed_nodes + (p + 1);
+        traversed_nodes += (p + 1);
+        
+        
+        if (p >= bottom_list.size() || !bottom_list.get(p).getKey().equals(key))
+        {
+            bottom_list.add(p, new_entry);
+        }
 
         int entry_height = generateEll(alpha, key);
         for (int i = 0; i <= entry_height; i++)
         {
-            while (skip_list.size() <= i)
+            level_exists(i);
+            List<MyEntry> current_level = skip_list.get(i);
+            p = SkipSearch(current_level, key);
+            traversed_nodes += (p + 1);
+            
+            if (p >= current_level.size() || !current_level.get(p).getKey().equals(key))
             {
-                skip_list.add(new ArrayList<>());
+                current_level.add(p, new_entry);
             }
-            List<MyEntry> current_list = skip_list.get(i);
-            p = SkipSearch(current_list, key);
-            traversed_nodes = traversed_nodes + (p + 1);
-            current_list.add(p, new_entry);
         }
 
         size++;
         return traversed_nodes;
+    }
+
+    private void level_exists (int level)
+    {
+        while (skip_list.size() <= level)
+        {
+            List <MyEntry> new_level = new ArrayList<>();
+            new_level.add(new MyEntry(Integer.MIN_VALUE, "-inf"));
+            new_level.add(new MyEntry(Integer.MAX_VALUE, "+inf"));
+            skip_list.add(new_level);
+        }
     }
 
     private int SkipSearch (List<MyEntry> list, int key)
@@ -154,20 +172,22 @@ class SkipListPQ
             int h = 0;
             for (int i = 0; i < skip_list.size(); i++)
             {
-                if (skip_list.get(i).contains(entry))
+                if (i < skip_list.size() && skip_list.get(i).size() > 0 && skip_list.get(i).contains(entry))
                 {
                     h++;
                 }
             }
-            s.append(entry.getKey()).append(" ").append(entry.getValue()).append(" ").append(h).append(",");
+            s.append(entry.getKey()).append(" ").append(entry.getValue()).append(" ").append(h).append(", ");
         }
+        s.deleteCharAt(s.length() - 1);
+        s.deleteCharAt(s.length() - 1);
         System.out.println(s);
     }
 }
 
 //TestProgram
 
-public class TestProgram2
+public class TestProgram
 {
     public static void main(String[] args)
     {
@@ -196,9 +216,9 @@ public class TestProgram2
                 switch (operation)
                 {
                     case 0:
-                        MyEntry minEntry = skip_list.min();
-                        if (minEntry != null) {
-                            System.out.println("\n" + minEntry);
+                        MyEntry min_entry = skip_list.min();
+                        if (min_entry != null) {
+                            System.out.println(min_entry);
                         }
                         break;
                     case 1:
@@ -212,7 +232,7 @@ public class TestProgram2
                         total_inserts++;
                         break;
                     case 3:
-                    skip_list.print();
+                        skip_list.print();
                         break;
                     default:
                         System.out.println("Invalid operation code");
