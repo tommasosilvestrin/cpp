@@ -8,11 +8,13 @@ class MyEntry
 {
     private Integer key;
     private String value;
+    public int entry_size;
 
     public MyEntry (Integer key, String value)
     {
         this.key = key;
         this.value = value;
+        this.entry_size = 1;
     }
     public Integer getKey ()
     {
@@ -32,24 +34,18 @@ class MyEntry
 //Class SkipListPQ
 class SkipListPQ
 {
-    private double alpha;
+    private double alpha;                                                   // head probability of a coin toss
     private Random rand;
-    private MyEntry inf = new MyEntry(Integer.MAX_VALUE, "+inf");
-    private MyEntry minf = new MyEntry(Integer.MIN_VALUE, "+inf");
-    private MyEntry [][] skip_list;
-    private int size;   // numero di entry compreso le sentinelle
-    private int h;      // altezza della skip list
+    private List<List<MyEntry>> skip_list;
+    private int size;
 
     public SkipListPQ (double alpha)
     {
         this.alpha = alpha;
         this.rand = new Random();
-        this.skip_list[0][0] = minf;
-        this.skip_list[0][1] = inf;
-        this.skip_list[1][0] = minf;
-        this.skip_list[1][1] = inf;
         this.size = 0;
-        this.h = 2;
+        this.skip_list = new ArrayList<>();
+        skip_list.add(new ArrayList<>());
     }
 
     public int size ()
@@ -59,34 +55,50 @@ class SkipListPQ
 
     public MyEntry min ()
     {
+        if (size == 0)
+        {
+            return null;
+        }
+        List<MyEntry> bottom_list = skip_list.get(0);
+        return bottom_list.get(0);
     }
 
     public int insert (int key, String value)
     {
-        int nodes_traversed = 0;
-        int p = 0; // position in Si that contains the largest key <= k
-        for (int i = 0; i < h; i++)
+        MyEntry new_entry = new MyEntry(key, value);
+        int traversed_nodes = 0;
+
+        List<MyEntry> bottom_list = skip_list.get(0);
+        int p = SkipSearch(bottom_list, key);
+        bottom_list.add(p, new_entry);
+        traversed_nodes = traversed_nodes + (p + 1);
+
+        int entry_height = generateEll(alpha, key);
+        for (int i = 0; i <= entry_height; i++)
         {
-            for (int j = 0; j < size + 2; j++)
+            while (skip_list.size() <= i)
             {
-                if (skip_list[i][j].getKey() < key && skip_list[i][j] != null)
-                {
-                    p++;
-                }
+                skip_list.add(new ArrayList<>());
             }
-            p--;
+            List<MyEntry> current_list = skip_list.get(i);
+            p = SkipSearch(current_list, key);
+            traversed_nodes = traversed_nodes + (p + 1);
+            current_list.add(p, new_entry);
         }
 
-        return nodes_traversed;
+        size++;
+        return traversed_nodes;
     }
-    /*
-    key = 7     p = 2
-    -inf                    +inf
-    -inf        4           +inf
-    -inf    2   4       8   +inf
-    -inf    2   4   6   8   +inf
-    
-    */
+
+    private int SkipSearch (List<MyEntry> list, int key)
+    {
+        int p = 0;
+        while (p < list.size() && list.get(p).getKey() < key)
+        {
+            p++;
+        }
+        return p;
+    }
 
     private int generateEll (double alpha_, int key)
     {
@@ -111,16 +123,51 @@ class SkipListPQ
 
     public MyEntry removeMin()
     {
+        if (size == 0)
+        {
+            return null;
+        }
+
+        MyEntry min_entry = min();
+        if (min_entry != null)
+        {
+            for (int i = 0; i < skip_list.size(); i++)
+            {
+                skip_list.get(i).remove(min_entry);
+                if (skip_list.get(i).isEmpty() && i > 0)
+                {
+                    skip_list.remove(i);
+                }
+            }
+            size--;
+        }
+
+        return min_entry;
     }
 
     public void print()
     {
+        List<MyEntry> bottom_list = skip_list.get(0);
+        StringBuilder s = new StringBuilder();
+        for (MyEntry entry : bottom_list)
+        {
+            int h = 0;
+            for (int i = 0; i < skip_list.size(); i++)
+            {
+                if (skip_list.get(i).contains(entry))
+                {
+                    h++;
+                }
+            }
+            s.append(entry.getKey()).append(" ").append(entry.getValue()).append(" ").append(h).append(",");
+        }
+        System.out.println(s);
     }
 }
 
 //TestProgram
 
-public class TestProgram1
+public class TestProgram2
 {
     public static void main(String[] args)
     {
@@ -137,7 +184,9 @@ public class TestProgram1
             double alpha = Double.parseDouble(firstLine[1]);
             System.out.println(N + " " + alpha);
 
-            SkipListPQ skipList = new SkipListPQ(alpha);
+            SkipListPQ skip_list = new SkipListPQ(alpha);
+            int total_inserts = 0;
+            int total_traversed = 0;
 
             for (int i = 0; i < N; i++)
             {
@@ -147,27 +196,32 @@ public class TestProgram1
                 switch (operation)
                 {
                     case 0:
-                        MyEntry minEntry = skipList.min();
+                        MyEntry minEntry = skip_list.min();
                         if (minEntry != null) {
                             System.out.println("\n" + minEntry);
                         }
                         break;
                     case 1:
-                        @SuppressWarnings("unused") MyEntry removedEntry = skipList.removeMin();
+                        @SuppressWarnings("unused") MyEntry removedEntry = skip_list.removeMin();
                         break;
                     case 2:
                         int key = Integer.parseInt(line[1]);
                         String value = line[2];
-                        skipList.insert(key, value);
+                        int node_traversed = skip_list.insert(key, value);
+                        total_traversed += node_traversed;
+                        total_inserts++;
                         break;
                     case 3:
-                        skipList.print();
+                    skip_list.print();
                         break;
                     default:
                         System.out.println("Invalid operation code");
                         return;
                 }
             }
+
+            double average_traversed_node = (double) total_traversed / total_inserts;
+            System.out.println(alpha + " " + skip_list.size() + " " + total_inserts + " " + average_traversed_node);
         } catch (IOException e)
         {
             System.out.println("Error reading file: " + e.getMessage());
