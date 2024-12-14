@@ -8,13 +8,11 @@ class MyEntry
 {
     private Integer key;
     private String value;
-    public int entry_size;
 
     public MyEntry (Integer key, String value)
     {
         this.key = key;
         this.value = value;
-        this.entry_size = 1;
     }
     public Integer getKey ()
     {
