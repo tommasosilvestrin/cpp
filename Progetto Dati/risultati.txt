@@ -1,1 +1,0 @@
-alphaEfficiencyTest_10K_1: 0.0 9800 10000 2393.4036
