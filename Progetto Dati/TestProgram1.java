@@ -29,13 +29,12 @@ class MyEntry
     }
 }
 
-//Class SkipListPQ
 class SkipListPQ
 {
     private double alpha;
     private Random rand;
     private List<List<MyEntry>> skip_list;
-    private int size;   // only valid entries, excluding sentinels
+    private int size;
 
     public SkipListPQ (double alpha)
     {
@@ -43,80 +42,71 @@ class SkipListPQ
         this.rand = new Random();
         this.size = 0;
         this.skip_list = new ArrayList<>();
-        level_exists(0); // initialize bottom level with sentinels
+        
+        List<MyEntry> base_level = new ArrayList<>();
+        base_level.add(new MyEntry(Integer.MIN_VALUE, "-inf"));
+        base_level.add(new MyEntry(Integer.MAX_VALUE, "+inf"));
+        skip_list.add(base_level);
     }
 
     public int size () 
     {
-        return size;    // return the count of valid entries
+        return size;
     }
 
     public MyEntry min ()
     {
-        if (size == 0)
-        {
-            return null;    // no valid entries
-        }
-        List<MyEntry> bottom_list = skip_list.get(0);
-        return bottom_list.get(1);
+        if (size == 0) return null;
+        return skip_list.get(0).get(1);
     }
     
     public int insert (int key, String value)
     {
-        
+        int[] v = SkipSearch(key);
+        int p = v[0];
+        int traversed_nodes = v[1];
+
         MyEntry new_entry = new MyEntry(key, value);
-        int traversed_nodes = 0;
+        int level = generateEll(alpha, key);
 
-        // find correct position for insert at bottom level
-        level_exists(0);
-        List<MyEntry> bottom_list = skip_list.get(0);
-        int p = SkipSearch(bottom_list, key);
-        traversed_nodes += (p + 1);
-        
-        // insert the entry at the calculated position at bottom level
-        if (p >= bottom_list.size() || !bottom_list.get(p).getKey().equals(key))
+        while (level >= skip_list.size())
         {
-            bottom_list.add(p, new_entry);
-        }
-
-        // insert the entry at the above levels
-        int entry_height = generateEll(alpha, key);
-        for (int i = 0; i <= entry_height; i++)
-        {
-            level_exists(i);
-            List<MyEntry> current_level = skip_list.get(i);
-            p = SkipSearch(current_level, key);
-            traversed_nodes += (p + 1);
-            
-            if (p >= current_level.size() || !current_level.get(p).getKey().equals(key))
-            {
-                current_level.add(p, new_entry);
-            }
-        }
-        
-        size++;
-        return traversed_nodes;
-    }
-    
-    private void level_exists (int level)
-    {
-        while (skip_list.size() <= level)
-        {
-            List <MyEntry> new_level = new ArrayList<>();
+            List<MyEntry> new_level = new ArrayList<>();
             new_level.add(new MyEntry(Integer.MIN_VALUE, "-inf"));
             new_level.add(new MyEntry(Integer.MAX_VALUE, "+inf"));
             skip_list.add(new_level);
         }
+
+        for (int i = 0; i <= level; i++)
+        {
+            List<MyEntry> current_level = skip_list.get(i);
+            current_level.add(p + 1, new_entry);
+        }
+
+        size++;
+        return traversed_nodes;          
     }
 
-    private int SkipSearch (List<MyEntry> list, int key)
+    private int[] SkipSearch (int key)
     {
         int p = 0;
-        while (p < list.size() && list.get(p).getKey() < key)
+        int traversed_nodes = 0;
+
+        for (int i = skip_list.size() - 1; i >= 0; i--)
         {
-            p++;
+            List<MyEntry> level = skip_list.get(i);
+            while (p < level.size() - 1 && level.get(p + 1).getKey() <= key)
+            {
+                p++;
+                traversed_nodes++;
+            }
+            traversed_nodes++;
+            if (i > 0)
+            {
+                p = Math.max(0, p - 1);
+            }
         }
-        return p;
+        return new int[] {p, traversed_nodes};
     }
 
     private int generateEll (double alpha_, int key)
@@ -142,56 +132,56 @@ class SkipListPQ
 
     public MyEntry removeMin()
     {
-        if (size == 0)  // no valid entries
-        {
-            return null;
-        }
+        if (size == 0) return null;
 
         MyEntry min_entry = min();
-        if (min_entry != null)
+        for (int i = 0; i < skip_list.size(); i++)
         {
-            for (int i = 0; i < skip_list.size(); i++)
+            List<MyEntry> level = skip_list.get(i);
+            if (level.contains(min_entry))
             {
-                skip_list.get(i).remove(min_entry); // remove the minimun entry from every levels
-
-                // remove level if it contains only the sentinels
-                if (skip_list.get(i).isEmpty() && i > 0)
-                {
-                    skip_list.remove(i);
-                }
+                level.remove(min_entry);
             }
-            size--;
+            else
+            {
+                break;
+            }
         }
 
+        while (skip_list.size() > 1 && skip_list.get(skip_list.size() - 1).size() == 2)
+        {
+            skip_list.remove(skip_list.size() - 1);
+        }
+
+        size--;
         return min_entry;
     }
     
     public void print()
     {
-        List<MyEntry> bottom_list = skip_list.get(0);
-        StringBuilder s = new StringBuilder();
+        List<MyEntry> bottom_level = skip_list.get(0);
 
-        for (int i = 1; i < bottom_list.size() - 1; i++) // no sentinels
-        {
-            MyEntry entry = bottom_list.get(i);
-            int h = 0;
+        for (int i = 1; i < bottom_level.size() - 1; i++) {
+            MyEntry entry = bottom_level.get(i);
+            int height = 1;
 
-            for (int level = 0; level < skip_list.size(); level++)
-            {
-                if (skip_list.get(level).contains(entry))
-                {
-                    h++;
+            for (int j = 1; j < skip_list.size(); j++) {
+                if (skip_list.get(j).contains(entry)) {
+                    height++;
                 }
             }
-            s.append(entry.getKey()).append(" ").append(entry.getValue()).append(" ").append(h).append(", ");
+            System.out.print(entry.getKey() + " " + entry.getValue() + " " + height);
+            
+            if (i < bottom_level.size() - 2) {
+                System.out.print(", ");
+            }
         }
-        s.delete(s.length() - 2, s.length() - 1);
-        System.out.println(s);
+        System.out.println();
     }
     
 }
 
-public class TestProgram
+public class TestProgram1
 {
     public static void main(String[] args)
     {
@@ -245,7 +235,7 @@ public class TestProgram
             }
 
             double average_traversed_node = (double) total_traversed / total_inserts;
-            System.out.println(alpha + " " + skip_list.size() + " " + total_inserts + " " + total_traversed + " " + average_traversed_node);
+            System.out.println(alpha + " " + skip_list.size() + " " + total_inserts + " " + average_traversed_node);
         } catch (IOException e)
         {
             System.out.println("Error reading file: " + e.getMessage());
