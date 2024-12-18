@@ -1,24 +1,36 @@
 #ifndef Maze_h
 #define Maze_h
 
-#include <iostream>
-#include <fstream>
+#include <vector>
+#include <string>
+#include <array>
 
 class Maze
 {
     public:
-        Maze (void);
-        Maze (std::fstream &fs);
+        Maze (const std::string& file_path);
         
-        constexpr std::vector<std::vector<char>> GRID;
-        void insert_maze (std::fstream &fs);
-        
-        bool is_exits(int position);
-        
-        constexpr int starting_position;
+        bool is_wall (int x, int y) const;
+
+        std::array<int, 2> get_current_position () const;
+        void set_current_position (int x, int y);
+
+        bool is_exit () const;
+
+        class NotFoundException final : std::exception {};
+        class InvalidMoveException final : std::exception {};
     
     private:
-        std::vector<int> exit_positions;
+        int current_x {};
+        int current_y {};
+
+        std::vector<std::string> map;
+        std::array<int, 2> find (char c) const;
+        std::array<int, 2> find_start () const;
+        std::array<int, 2> find_exit () const;
+
+        int exit_x {};
+        int exit_y {}:
 };
 
 #endif
