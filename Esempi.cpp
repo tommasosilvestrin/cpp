@@ -53,7 +53,7 @@ public:
 
     // ACCESSO
     double &operator[](int n)           // lettura e scrittura di vettori non costanti
-        double operator[](int n) const; // lettura di vettori costanti
+    double operator[](int n) const;     // lettura di vettori costanti
 
     ~delete() { delete[] elem } // DISTRUTTORE
 };
@@ -118,8 +118,7 @@ public:
 
     // PER EVITARE DI INSERIRE UNA CLASSE DERIVATA IN UNO SLOT CONTENENTE MEMBRI DELLA CLASSE BASE
     Shape(const Shape &) = delete // disibilitato costruttore di copia
-                           Shape
-                           & operator=(const Shape &) = delete; // disabilitato operator=
+    Shape& operator=(const Shape &) = delete; // disabilitato operator=
 
 protected: // essendo costruttori protected Shape non è implementabile
     Shape() {}
@@ -267,7 +266,6 @@ f(std::list<double> &v, int x)
 }
 
 // STD::SORT () ordina tra due iteratori
-
 template <typename Ran>
 void sort(Ran first, Ran last); // ordinamento con "<"
 
